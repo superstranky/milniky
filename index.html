@@ -183,7 +183,7 @@
       <div class="sectionTitle" id="thanksTitle"></div>
       <p class="sectionSub" id="thanksIntro"></p>
       <button class="ghost" id="thanksBtn"></button>
-      <div id="thanksBox" style="display:none">
+      <div id="thanksBox" style="display:block">
         <div class="tiers" id="tiers"></div>
         <p class="hint" id="thanksNote" style="margin-top:12px"></p>
       </div>
@@ -191,6 +191,7 @@
   </div>
 
   <footer id="footer"></footer>
+  <div style="text-align:center; margin-top:10px"><img id="visits" alt="" style="height:22px; opacity:.65"></div>
 </div>
 
 <script>
@@ -223,6 +224,7 @@ const I18N = {
     exTitle:'🔎 Preskúmaj ďalšie míľniky', exSub:'Zapni si, čo ťa zaujíma — zobrazia sa všetky míľniky danej kategórie.',
     showPast:'Zobraziť aj minulé', hidePast:'Skryť minulé',
     footer:'Výpočet beží celý v prehliadači — žiadne dáta o tebe sa nikam neposielajú. 💜',
+    visitsLabel:'Návštevy',
     gcalBtn:'Google kalendár',
     bdaySub:'Nech sa Ti splnia všetky priania — a pozri, koľko skvelých míľnikov Ťa ešte čaká! 🥳',
     bdayTitle:n=> n?`🎉 Wau ${n}, dnes máš narodeniny! 🎂`:'🎉 Wau, dnes máš narodeniny! 🎂',
@@ -235,7 +237,7 @@ const I18N = {
     statLabels:['dní','týždňov','mesiacov','hodín (orientačne)','sekúnd (orientačne)'],
     ageLine:(y,d)=>`Máš <b>${y}</b> rokov · ďalšie narodeniny o <b>${d}</b> dní`,
     muskUnit:{year:'rokov',day:'dní',hour:'hodín',minute:'minút',second:'sekúnd'},
-    muskLine:(v,u)=>`💸 Keby bola každá tvoja prežitá sekunda 1 dolár, Elon Musk by to zarobil za ~${v} ${u}.`,
+    muskLine:(vt)=>`💸 Keby bola každá tvoja prežitá sekunda 1 dolár, Elon Musk by to zarobil za ${vt}.`,
     icsDesc:d=>`Životný míľnik 🎂 (${d})`,
     rel:{today:'dnes! 🎊', tomorrow:'zajtra', yesterday:'včera',
       inDays:n=>`o ${n} dní`, inMonths:n=>`o ~${n} mes.`, inYears:n=>`o ~${n} r.`,
@@ -267,6 +269,7 @@ const I18N = {
     exTitle:'🔎 Explore more milestones', exSub:'Turn on what interests you — all milestones of that category will appear.',
     showPast:'Show past too', hidePast:'Hide past',
     footer:'The calculation runs entirely in your browser — no data about you is sent anywhere. 💜',
+    visitsLabel:'Visits',
     gcalBtn:'Google Calendar',
     bdaySub:'May all your wishes come true — and look how many great milestones are still ahead! 🥳',
     bdayTitle:n=> n?`🎉 Wow ${n}, it's your birthday today! 🎂`:"🎉 Wow, it's your birthday today! 🎂",
@@ -279,7 +282,7 @@ const I18N = {
     statLabels:['days','weeks','months','hours (approx.)','seconds (approx.)'],
     ageLine:(y,d)=>`You are <b>${y}</b> · next birthday in <b>${d}</b> days`,
     muskUnit:{year:'years',day:'days',hour:'hours',minute:'minutes',second:'seconds'},
-    muskLine:(v,u)=>`💸 If each second you've lived were $1, Elon Musk would earn it in ~${v} ${u}.`,
+    muskLine:(vt)=>`💸 If each second you've lived were $1, Elon Musk would earn it in ${vt}.`,
     icsDesc:d=>`Life milestone 🎂 (${d})`,
     rel:{today:'today! 🎊', tomorrow:'tomorrow', yesterday:'yesterday',
       inDays:n=>`in ${n} days`, inMonths:n=>`in ~${n} mo`, inYears:n=>`in ~${n} yr`,
@@ -319,11 +322,8 @@ const TYPE_EMOJI = {day:'📅',week:'🗓️',month:'🌙',year:'🎉'};
 
 const MUSK_PER_SEC = 3000;   // $/s — orientačný „zárobok“ Elona Muska (≈ 95 mld $/rok); laditeľné
 function muskFact(seconds){
-  let s = seconds / MUSK_PER_SEC;    // 1 prežitá sekunda = 1 dolár
-  const steps = [['year',31557600],['day',86400],['hour',3600],['minute',60],['second',1]];
-  for(const [key,div] of steps){
-    if(s>=div || key==='second'){ const v=s/div; return {v: v>=10?Math.round(v):Math.round(v*10)/10, key}; }
-  }
+  const s = seconds / MUSK_PER_SEC;    // koľko sekúnd Musk potrebuje (1 prežitá sekunda = 1 dolár)
+  return { totalHours: s/3600, days: Math.floor(s/86400), hours: Math.round((s%86400)/3600), minutes: Math.round(s/60) };
 }
 
 function build(dob){
@@ -403,7 +403,7 @@ function rowHTML(g, name, now, defaultChecked){
   </div>`;
 }
 
-const NEAR_DAYS = 180;   // „blízka budúcnosť“ – čo spadne do tohto okna, ide hore
+const NEAR_DAYS = 365;   // do roka – čo spadne do tohto okna (dni/týždne/mesiace), ide hore
 function pickHighlights(){
   const today = todayMid();
   const nearEnd = addDays(today, NEAR_DAYS);
@@ -465,11 +465,15 @@ function renderStats(dob){
   $('#ageLine').innerHTML = L().ageLine(y, toBday);
   let html = [days,weeks,months,hours].map((v,i)=>
     `<div class="stat"><div class="n">${nf.format(v)}</div><div class="l">${L().statLabels[i]}</div></div>`).join('');
-  const mf = muskFact(seconds);
+  const mf = muskFact(seconds), U = L().muskUnit;
+  let vt;
+  if(mf.totalHours < 1)        vt = `~${nf.format(mf.minutes)} ${U.minute}`;
+  else if(mf.totalHours < 72)  vt = `~${nf.format(Math.round(mf.totalHours))} ${U.hour}`;
+  else                         vt = `~${nf.format(mf.days)} ${U.day} ${nf.format(mf.hours)} ${U.hour}`;
   html += `<div class="stat live" id="secCell" style="grid-column:1 / -1">`
         + `<div class="n">${nf.format(seconds)}</div>`
         + `<div class="l">${L().statLabels[4]}</div>`
-        + `<div class="musk">${L().muskLine(nf.format(mf.v), L().muskUnit[mf.key])}</div></div>`;
+        + `<div class="musk">${L().muskLine(vt)}</div></div>`;
   $('#stats').innerHTML = html;
   // sekundy tikajú naživo — to je tá vec „počas tohto dňa“ 🙂
   if(secTimer) clearInterval(secTimer);
@@ -692,6 +696,7 @@ $('#thanksBtn').onclick = ()=>{
   if(!initial){ try{ initial = localStorage.getItem('milniky_lang'); }catch(e){} }
   if(!initial){ initial = (navigator.language||'').toLowerCase().startsWith('en') ? 'en' : 'sk'; }
   setLang(initial);
+  $('#visits').src = `https://api.visitorbadge.io/api/visitors?path=${encodeURIComponent('superstranky.github.io/milniky')}&label=${encodeURIComponent(L().visitsLabel)}&labelColor=%23312e81&countColor=%237c3aed&style=flat`;
   const d = p.get('d'), n = p.get('n');
   if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ $('#dob').value = d; if(n) $('#name').value = n; runCalc(); }
 })();
