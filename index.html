@@ -7,10 +7,10 @@
 <meta name="description" content="Zisti svoje veľké okrúhle čísla — 10 000 dní, 3 000 týždňov, okrúhle narodeniny — a ulož si ich do kalendára. 🎂">
 <!-- Open Graph / sociálne siete -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://superstranky.github.io/milniky/">
+<meta property="og:url" content="https://lifedays.vercel.app/">
 <meta property="og:title" content="Životné míľniky — koľko dní si prežil? 🎂">
 <meta property="og:description" content="Zisti svoje veľké okrúhle čísla — 10 000 dní, 3 000 týždňov, okrúhle narodeniny — a ulož si ich rovno do kalendára.">
-<meta property="og:image" content="https://superstranky.github.io/milniky/og.png">
+<meta property="og:image" content="https://lifedays.vercel.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="sk_SK">
@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Životné míľniky — koľko dní si prežil? 🎂">
 <meta name="twitter:description" content="Veľké okrúhle čísla tvojho života — a rovno do kalendára.">
-<meta name="twitter:image" content="https://superstranky.github.io/milniky/og.png">
+<meta name="twitter:image" content="https://lifedays.vercel.app/og.png">
 <!-- PWA / pridanie na plochu telefónu -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7c3aed">
@@ -721,7 +721,7 @@ $('#thanksBtn').onclick = ()=>{
   if(!initial){ try{ initial = localStorage.getItem('milniky_lang'); }catch(e){} }
   if(!initial){ initial = (navigator.language||'').toLowerCase().startsWith('en') ? 'en' : 'sk'; }
   setLang(initial);
-  $('#visits').src = `https://api.visitorbadge.io/api/visitors?path=${encodeURIComponent('superstranky.github.io/milniky')}&label=${encodeURIComponent(L().visitsLabel)}&labelColor=%23312e81&countColor=%237c3aed&style=flat`;
+  $('#visits').src = `https://api.visitorbadge.io/api/visitors?path=${encodeURIComponent('lifedays.vercel.app')}&label=${encodeURIComponent(L().visitsLabel)}&labelColor=%23312e81&countColor=%237c3aed&style=flat`;
   const d = p.get('d'), n = p.get('n');
   if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ $('#dob').value = d; if(n) $('#name').value = n; runCalc(); }
 })();
