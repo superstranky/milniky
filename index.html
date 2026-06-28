@@ -132,6 +132,7 @@
         <input type="text" id="name">
       </div>
       <button id="go"></button>
+      <button class="ghost" id="reset" style="display:none"></button>
     </div>
   </div>
 
@@ -223,7 +224,7 @@ const I18N = {
     title:'🎂 Kalkulačka životných míľnikov',
     sub:'Zadaj dátum narodenia a zisti svoje veľké okrúhle čísla — a hoď si ich do kalendára.',
     dob:'Dátum narodenia', name:'Meno (voliteľné — do názvu udalostí)', namePh:'napr. Jano',
-    go:'Spočítať ✨',
+    go:'Spočítať ✨', reset:'↺ Zadať svoj dátum',
     copyLink:'🔗 Pošli link s dátumom', copyHint:'Otvorí sa rovno s jeho (alebo tvojimi 🙂) míľnikmi — pošli ho známym alebo hoď na FB, nech nezabudnú! 😄', copied:'✅ Skopírované!',
     shareLabel:'Alebo zdieľaj rovno:', shareNative:'📲 Zdieľať…', shareText:'Pozri, koľko mám životných míľnikov 🎂 a kedy ma čakajú ďalšie:',
     hlTitle:'⭐ Tvoje najbližšie veľké míľniky', hlSub:'Tie najzaujímavejšie, čo ťa čakajú. Zaškrtnuté sú pripravené na export do kalendára.',
@@ -268,7 +269,7 @@ const I18N = {
     title:'🎂 Life Milestones Calculator',
     sub:'Enter your date of birth and discover your big round numbers — and drop them into your calendar.',
     dob:'Date of birth', name:'Name (optional — used in event titles)', namePh:'e.g. John',
-    go:'Calculate ✨',
+    go:'Calculate ✨', reset:'↺ Enter your own date',
     copyLink:'🔗 Share link with the date', copyHint:'It opens straight to their (or your 🙂) milestones — send it to friends or post it on FB so nobody forgets! 😄', copied:'✅ Copied!',
     shareLabel:'Or share directly:', shareNative:'📲 Share…', shareText:'Check out my life milestones 🎂 and what\'s coming next:',
     hlTitle:'⭐ Your next big milestones', hlSub:'The most interesting ones ahead. Ticked = ready to export to your calendar.',
@@ -636,6 +637,7 @@ function applyStaticTexts(){
   $('#lblName').textContent = t.name;
   $('#name').placeholder = t.namePh;
   $('#go').textContent = t.go;
+  $('#reset').textContent = t.reset;
   $('#copyLink').textContent = t.copyLink;
   $('#copyHint').textContent = t.copyHint;
   $('#shareLabel').textContent = t.shareLabel;
@@ -682,11 +684,24 @@ function runCalc(){
   const name = $('#name').value.trim();
   renderStats(dob); renderHighlights(name); renderFilters(); renderExplore(name); renderShare();
   $('#results').style.display = 'block';
+  $('#reset').style.display = 'inline-block';
   $('#birthday').classList.remove('show');
   if(isBirthdayToday(dob)) showBirthday(name);
   $('#results').scrollIntoView({behavior:'smooth'});
 }
 $('#go').onclick = runCalc;
+function resetApp(){
+  $('#dob').value=''; $('#name').value='';
+  $('#results').style.display='none';
+  $('#reset').style.display='none';
+  $('#birthday').classList.remove('show');
+  if(secTimer) clearInterval(secTimer);
+  lastDob = null;
+  history.replaceState({}, '', location.pathname);   // vyčistí ?d=…&n=… z URL
+  window.scrollTo({top:0, behavior:'smooth'});
+  $('#dob').focus();
+}
+$('#reset').onclick = resetApp;
 $('#togglePast').onclick = ()=>{ showPast=!showPast; $('#togglePast').textContent = showPast?L().hidePast:L().showPast; renderExplore($('#name').value.trim()); };
 $('#downloadIcs').onclick = downloadIcs;
 $('#importBtn').onclick = ()=>{ const h=$('#importHelp'); h.style.display = h.style.display==='none' ? 'block':'none'; };
