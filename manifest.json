@@ -1,0 +1,14 @@
+{
+  "name": "Životné míľniky",
+  "short_name": "Míľniky",
+  "description": "Koľko dní si prežil? Veľké okrúhle čísla tvojho života — a rovno do kalendára.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
